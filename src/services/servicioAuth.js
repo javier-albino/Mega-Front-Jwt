@@ -93,4 +93,17 @@ const updateProduct = async (productId, descripcion, nombre) => {
   }
 };
 
-export { login, saveProduct, getProducts, deleteProduct, updateProduct };
+const getUf = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/products/uf', {
+      method: 'GET',
+    });
+    if (!response.ok) throw new Error('Error al obtener el valor de la UF');
+    return await response.json(); // Devuelve el valor de la UF
+  } catch (error) {
+    console.error('Error en getUf:', error);
+    return null;
+  }
+};
+
+export { login, saveProduct, getProducts, deleteProduct, updateProduct, getUf };

@@ -1,6 +1,5 @@
-// home.jsx
 import React, { useEffect, useState } from 'react';
-import { saveProduct, getProducts, deleteProduct, updateProduct } from './../services/servicioAuth';
+import { saveProduct, getProducts, deleteProduct, updateProduct, getUf } from './../services/servicioAuth';
 import useAuthStore from './../storage/store';
 
 const Home = () => {
@@ -8,6 +7,7 @@ const Home = () => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [editingProductId, setEditingProductId] = useState(null);
+  const [ufValue, setUfValue] = useState(null); // Estado para el valor de la UF
   const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
@@ -22,7 +22,13 @@ const Home = () => {
       }
     };
 
+    const fetchUfValue = async () => {
+      const uf = await getUf();
+      setUfValue(uf); // Almacena el valor de la UF en el estado
+    };
+
     fetchProducts();
+    fetchUfValue(); // Llama a la función para obtener el valor de la UF
   }, [token]);
 
   const handleSaveProduct = async () => {
@@ -33,7 +39,6 @@ const Home = () => {
 
     if (nombre && descripcion) {
       if (editingProductId) {
-        // Editar producto existente
         const updatedProduct = await updateProduct(editingProductId, descripcion, nombre);
         if (updatedProduct) {
           setProducts((prevProducts) =>
@@ -46,7 +51,6 @@ const Home = () => {
           setDescripcion('');
         }
       } else {
-        // Guardar nuevo producto
         const newProduct = await saveProduct(descripcion, nombre);
         if (newProduct) {
           setProducts((prevProducts) => [...prevProducts, newProduct]);
@@ -80,6 +84,7 @@ const Home = () => {
   return (
     <div>
       <h2>Listar, Guardar, Editar y Eliminar Productos</h2>
+      {ufValue !== null && <p>Valor actual de la UF: {ufValue}</p>} {/* Muestra el valor de la UF */}
       <table>
         <thead>
           <tr>
