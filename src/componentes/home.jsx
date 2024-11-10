@@ -28,7 +28,7 @@ const Home = () => {
     };
 
     fetchProducts();
-    fetchUfValue(); // Llama a la función para obtener el valor de la UF
+    fetchUfValue(); // Llamar a la función para obtener el valor de la UF
   }, [token]);
 
   const handleSaveProduct = async () => {
