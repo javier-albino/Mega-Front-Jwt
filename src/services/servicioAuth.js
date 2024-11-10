@@ -8,6 +8,15 @@ const getTokenOrThrow = () => {
   return token;
 };
 
+// Función para manejar las solicitudes HTTP
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Error en la solicitud');
+  }
+  return await response.json();
+};
+
 const login = async (username, password) => {
   try {
     const response = await fetch('http://localhost:8080/auth/login', {
@@ -15,8 +24,7 @@ const login = async (username, password) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
-    if (!response.ok) throw new Error('Error en la autenticación');
-    const data = await response.json();
+    const data = await handleResponse(response);
     useAuthStore.getState().setToken(data.token);
     return data.token;
   } catch (error) {
@@ -25,7 +33,7 @@ const login = async (username, password) => {
   }
 };
 
-const saveProduct = async (descripcion, nombre) => {
+const saveProduct = async (descripcion, nombre, categoriaId) => {
   try {
     const token = getTokenOrThrow();
     const response = await fetch('http://localhost:8080/products/register', {
@@ -34,10 +42,9 @@ const saveProduct = async (descripcion, nombre) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ descripcion, nombre }),
+      body: JSON.stringify({ descripcion, nombre, categoriaId }),
     });
-    if (!response.ok) throw new Error('Error al guardar el producto');
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error en saveProduct:', error);
     return null;
@@ -51,8 +58,7 @@ const getProducts = async () => {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Error al obtener la lista de productos');
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error en getProducts:', error);
     return null;
@@ -66,7 +72,7 @@ const deleteProduct = async (productId) => {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Error al eliminar el producto');
+    await handleResponse(response); // No necesitamos devolver json en caso de delete
     return true;
   } catch (error) {
     console.error('Error en deleteProduct:', error);
@@ -74,7 +80,7 @@ const deleteProduct = async (productId) => {
   }
 };
 
-const updateProduct = async (productId, descripcion, nombre) => {
+const updateProduct = async (productId, descripcion, nombre, categoriaId) => {
   try {
     const token = getTokenOrThrow();
     const response = await fetch(`http://localhost:8080/products/${productId}`, {
@@ -83,10 +89,9 @@ const updateProduct = async (productId, descripcion, nombre) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ descripcion, nombre }),
+      body: JSON.stringify({ descripcion, nombre, categoriaId }),
     });
-    if (!response.ok) throw new Error('Error al actualizar el producto');
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error en updateProduct:', error);
     return null;
@@ -98,8 +103,7 @@ const getUf = async () => {
     const response = await fetch('http://localhost:8080/products/uf', {
       method: 'GET',
     });
-    if (!response.ok) throw new Error('Error al obtener el valor de la UF');
-    return await response.json(); // Devuelve el valor de la UF
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error en getUf:', error);
     return null;

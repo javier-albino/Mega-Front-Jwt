@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { saveProduct, getProducts, deleteProduct, updateProduct, getUf } from './../services/servicioAuth';
+import { getCategorias } from './../services/categoriaService'; // Importa la función para obtener categorías
 import useAuthStore from './../storage/store';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [categoriaId, setCategoriaId] = useState(''); // Estado para el ID de la categoría seleccionada
+  const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
   const [editingProductId, setEditingProductId] = useState(null);
   const [ufValue, setUfValue] = useState(null); // Estado para el valor de la UF
   const token = useAuthStore((state) => state.token);
@@ -22,13 +25,21 @@ const Home = () => {
       }
     };
 
+    const fetchCategorias = async () => {
+      const categoriaList = await getCategorias();
+      if (categoriaList) {
+        setCategorias(categoriaList);
+      }
+    };
+
     const fetchUfValue = async () => {
       const uf = await getUf();
       setUfValue(uf); // Almacena el valor de la UF en el estado
     };
 
     fetchProducts();
-    fetchUfValue(); // Llamar a la función para obtener el valor de la UF
+    fetchCategorias(); // Llamada para cargar las categorías
+    fetchUfValue(); // Llamada para obtener el valor de la UF
   }, [token]);
 
   const handleSaveProduct = async () => {
@@ -37,9 +48,9 @@ const Home = () => {
       return;
     }
 
-    if (nombre && descripcion) {
+    if (nombre && descripcion && categoriaId) {
       if (editingProductId) {
-        const updatedProduct = await updateProduct(editingProductId, descripcion, nombre);
+        const updatedProduct = await updateProduct(editingProductId, descripcion, nombre, categoriaId);
         if (updatedProduct) {
           setProducts((prevProducts) =>
             prevProducts.map((product) =>
@@ -49,17 +60,19 @@ const Home = () => {
           setEditingProductId(null);
           setNombre('');
           setDescripcion('');
+          setCategoriaId('');
         }
       } else {
-        const newProduct = await saveProduct(descripcion, nombre);
+        const newProduct = await saveProduct(descripcion, nombre, categoriaId);
         if (newProduct) {
           setProducts((prevProducts) => [...prevProducts, newProduct]);
           setNombre('');
           setDescripcion('');
+          setCategoriaId('');
         }
       }
     } else {
-      alert('Por favor ingrese el nombre y la descripción del producto.');
+      alert('Por favor ingrese el nombre, descripción y categoría del producto.');
     }
   };
 
@@ -67,6 +80,7 @@ const Home = () => {
     setEditingProductId(product.id);
     setNombre(product.nombre);
     setDescripcion(product.descripcion);
+    setCategoriaId(product.categoriaId || product.categoria?.id); // Asigna la categoría actual al estado
   };
 
   const handleDeleteProduct = async (productId) => {
@@ -90,6 +104,7 @@ const Home = () => {
           <tr>
             <th>Nombre</th>
             <th>Descripción</th>
+            <th>Categoría</th> {/* Columna para mostrar el nombre de la categoría */}
             <th>Acciones</th>
           </tr>
         </thead>
@@ -98,6 +113,7 @@ const Home = () => {
             <tr key={product.id}>
               <td>{product.nombre}</td>
               <td>{product.descripcion}</td>
+              <td>{product.categoriaNombre || 'Sin categoría'}</td> {/* Muestra el nombre de la categoría o "Sin categoría" */}
               <td>
                 <button onClick={() => handleEditProduct(product)}>Editar</button>
                 <button onClick={() => handleDeleteProduct(product.id)}>Eliminar</button>
@@ -125,6 +141,21 @@ const Home = () => {
             onChange={(e) => setDescripcion(e.target.value)}
             style={{ display: 'block', marginBottom: '1em', padding: '0.5em', width: '100%' }}
           />
+        </label>
+        <label>
+          Categoría del Producto:
+          <select
+            value={categoriaId}
+            onChange={(e) => setCategoriaId(e.target.value)}
+            style={{ display: 'block', marginBottom: '1em', padding: '0.5em', width: '100%' }}
+          >
+            <option value="">Seleccione una categoría</option>
+            {categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nombre}
+              </option>
+            ))}
+          </select>
         </label>
         <button onClick={handleSaveProduct} style={{ padding: '0.5em 1em', cursor: 'pointer' }}>
           {editingProductId ? 'Actualizar Producto' : 'Guardar Producto'}
