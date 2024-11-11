@@ -103,8 +103,13 @@ const updateProduct = async (productId, descripcion, nombre, categoriaId) => {
 
 const getUf = async () => {
   try {
+    const token = getTokenOrThrow();
     const response = await fetch('http://localhost:8080/products/uf', {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     });
     return await handleResponse(response);
   } catch (error) {
