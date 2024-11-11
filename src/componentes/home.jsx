@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { saveProduct, getProducts, deleteProduct, updateProduct, getUf } from './../services/servicioAuth';
-import { getCategorias } from './../services/categoriaService'; // Importa la función para obtener categorías
+import { getCategorias } from './../services/categoriaService';
 import useAuthStore from './../storage/store';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [categoriaId, setCategoriaId] = useState(''); // Estado para el ID de la categoría seleccionada
-  const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
+  const [categoriaId, setCategoriaId] = useState('');
+  const [categorias, setCategorias] = useState([]);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [ufValue, setUfValue] = useState(null); // Estado para el valor de la UF
+  const [ufValue, setUfValue] = useState(null);
   const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     const fetchProducts = async () => {
       if (token) {
         const productList = await getProducts();
-        if (productList) {
-          setProducts(productList);
-        }
+        if (productList) setProducts(productList);
       } else {
         console.log('Token no disponible. Asegúrate de estar autenticado.');
       }
@@ -27,19 +25,17 @@ const Home = () => {
 
     const fetchCategorias = async () => {
       const categoriaList = await getCategorias();
-      if (categoriaList) {
-        setCategorias(categoriaList);
-      }
+      if (categoriaList) setCategorias(categoriaList);
     };
 
     const fetchUfValue = async () => {
       const uf = await getUf();
-      setUfValue(uf); // Almacena el valor de la UF en el estado
+      setUfValue(uf);
     };
 
     fetchProducts();
-    fetchCategorias(); // Llamada para cargar las categorías
-    fetchUfValue(); // Llamada para obtener el valor de la UF
+    fetchCategorias();
+    fetchUfValue();
   }, [token]);
 
   const handleSaveProduct = async () => {
@@ -80,7 +76,7 @@ const Home = () => {
     setEditingProductId(product.id);
     setNombre(product.nombre);
     setDescripcion(product.descripcion);
-    setCategoriaId(product.categoriaId || product.categoria?.id); // Asigna la categoría actual al estado
+    setCategoriaId(product.categoriaId || product.categoria?.id);
   };
 
   const handleDeleteProduct = async (productId) => {
@@ -98,22 +94,17 @@ const Home = () => {
   return (
     <div>
       <h2>Listar, Guardar, Editar y Eliminar Productos</h2>
-      {ufValue !== null && <p>Valor actual de la UF: {ufValue}</p>} {/* Muestra el valor de la UF */}
+      {ufValue !== null && <p>Valor actual de la UF: {ufValue}</p>}
       <table>
         <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Categoría</th> {/* Columna para mostrar el nombre de la categoría */}
-            <th>Acciones</th>
-          </tr>
+          <tr><th>Nombre</th><th>Descripción</th><th>Categoría</th><th>Acciones</th></tr>
         </thead>
         <tbody>
           {products.map((product) => (
             <tr key={product.id}>
               <td>{product.nombre}</td>
               <td>{product.descripcion}</td>
-              <td>{product.categoriaNombre || 'Sin categoría'}</td> {/* Muestra el nombre de la categoría o "Sin categoría" */}
+              <td>{product.categoriaNombre || 'Sin categoría'}</td>
               <td>
                 <button onClick={() => handleEditProduct(product)}>Editar</button>
                 <button onClick={() => handleDeleteProduct(product.id)}>Eliminar</button>
