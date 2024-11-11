@@ -8,13 +8,16 @@ const getTokenOrThrow = () => {
   return token;
 };
 
-// Función para manejar las solicitudes HTTP
+// Función para manejar las respuestas HTTP
 const handleResponse = async (response) => {
   if (!response.ok) {
+    if (response.status === 404 || response.status === 204) {
+      throw new Error(`Error ${response.status}: El recurso no fue encontrado.`);
+    }
     const error = await response.json();
     throw new Error(error.message || 'Error en la solicitud');
   }
-  return await response.json();
+  return response.status === 204 ? null : await response.json();
 };
 
 const login = async (username, password) => {
@@ -72,7 +75,7 @@ const deleteProduct = async (productId) => {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` },
     });
-    await handleResponse(response); // No necesitamos devolver json en caso de delete
+    await handleResponse(response);
     return true;
   } catch (error) {
     console.error('Error en deleteProduct:', error);

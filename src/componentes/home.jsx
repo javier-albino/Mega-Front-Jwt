@@ -97,7 +97,12 @@ const Home = () => {
       {ufValue !== null && <p>Valor actual de la UF: {ufValue}</p>}
       <table>
         <thead>
-          <tr><th>Nombre</th><th>Descripción</th><th>Categoría</th><th>Acciones</th></tr>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
         </thead>
         <tbody>
           {products.map((product) => (
