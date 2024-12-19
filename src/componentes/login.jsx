@@ -1,22 +1,27 @@
 // login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {login} from './../services/servicioAuth';
+import { login } from './../services/servicioAuth';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Reinicia el estado de error
     try {
       const token = await login(username, password);
       console.log('Token recibido:', token); // Mostrar el token en la consola
       if (token) {
+        localStorage.setItem('token', token); // Guarda el token en localStorage
         navigate('/home'); // Navega a /home si el token existe
       }
     } catch (error) {
       console.error('Error en la autenticación:', error);
+      setError('Credenciales inválidas. Por favor, intenta nuevamente.');
     }
   };
 
@@ -48,6 +53,11 @@ const Login = () => {
             />
           </label>
         </div>
+        {error && (
+          <div style={{ color: 'red', marginBottom: '1em' }}>
+            {error}
+          </div>
+        )}
         <button type="submit" style={{ padding: '0.5em 1em', cursor: 'pointer' }}>
           Iniciar Sesión
         </button>
